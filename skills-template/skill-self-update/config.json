@@ -1,0 +1,23 @@
+{
+  "name": "skill-self-update",
+  "version": "1.0.0",
+  "description": "自更新 Skills 管理系统，版本控制与回退支持",
+  "check_on_start": true,
+  "periodic_check": {
+    "enabled": true,
+    "interval": "weekly",
+    "day": "monday",
+    "time": "09:00"
+  },
+  "auto_research": true,
+  "max_history_versions": 5,
+  "compatibility_check_before_change": true,
+  "notification_channels": {
+    "on_new_recommendation": true,
+    "on_update_available": true,
+    "on_periodic_check": false
+  },
+  "version_file_path": "versions",
+  "history_file_path": "history/changelog.md",
+  "recommendation_file_path": "recommendations/pending.json"
+}
