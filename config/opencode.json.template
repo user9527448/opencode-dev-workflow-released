@@ -1,0 +1,142 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "anthropic/claude-sonnet-4-20250505",
+  "temperature": 0.3,
+  "instructions": [
+    "AGENTS.md"
+  ],
+  "commands": {
+    "new": {
+      "description": "创建新项目",
+      "prompt": "执行新项目创建流程：需求 interrogation → 生成规范文档 → 初始化项目"
+    },
+    "add": {
+      "description": "添加新功能",
+      "prompt": "执行功能开发流程：检查上下文 → 确认需求 → 实现 → 验证"
+    },
+    "continue": {
+      "description": "继续上次工作",
+      "prompt": "恢复工作流程：读取 progress.txt → 显示当前状态 → 继续工作"
+    },
+    "review": {
+      "description": "代码审查",
+      "prompt": "执行代码审查：运行 lint/build/test → 检查规范 → 输出报告"
+    },
+    "status": {
+      "description": "查看项目状态",
+      "prompt": "读取并显示 progress.txt 和 lessons.md 的当前状态"
+    },
+    "deploy": {
+      "description": "部署项目",
+      "prompt": "执行部署流程：预检查 → 部署 → 验证生产环境"
+    },
+    "skills": {
+      "description": "查看可用 Skills",
+      "prompt": "列出所有可用的 Skills 并按类型分组展示"
+    },
+    "recommend": {
+      "description": "推荐相关 Skills",
+      "prompt": "根据当前项目类型和用户需求，推荐相关的 Skills"
+    }
+  },
+  /*
+   * 推荐安装的插件（用于增强 Skills 推荐功能）：
+   *
+   * 1. opencode-agent-skills (推荐)
+   *    - 自动语义匹配推荐 Skills
+   *    - 会话开始时主动推荐
+   *    - 安装: npm install -g opencode-agent-skills
+   *
+   * 2. opencode-skill-evolution
+   *    - 学习用户使用习惯
+   *    - 智能推荐
+   *    - 安装: npm install -g opencode-skill-evolution
+   *
+   * 3. opencode-plugin-preload-skills
+   *    - 内容触发预加载
+   *    - 会话开始预加载
+   *    - 安装: npm install -g opencode-plugin-preload-skills
+   *
+   * 如需启用插件，取消注释以下配置：
+   */
+  // "plugin": [
+  //   "opencode-agent-skills"
+  // ],
+  "permission": {
+    "shell": {
+      "allow": [
+        "npm install",
+        "npm run *",
+        "git *",
+        "npx *",
+        "pnpm *",
+        "yarn *"
+      ],
+      "deny": [
+        "rm -rf /",
+        "format c:",
+        "del /s /q *"
+      ],
+      "ask": [
+        "rm *",
+        "curl *",
+        "wget *"
+      ]
+    },
+    "git": {
+      "allow": [
+        "status",
+        "diff",
+        "add",
+        "commit",
+        "push",
+        "pull",
+        "branch",
+        "checkout",
+        "log",
+        "show"
+      ],
+      "deny": [
+        "push --force",
+        "rebase -i",
+        "reset --hard"
+      ]
+    },
+    "skill": {
+      "*": "allow",
+      "internal-*": "deny"
+    }
+  },
+  "agents": {
+    "coder": {
+      "description": "Main coding agent for implementation",
+      "model": "anthropic/claude-sonnet-4-20250505",
+      "temperature": 0.2,
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true,
+        "git": true
+      }
+    },
+    "planner": {
+      "description": "Planning and analysis agent",
+      "model": "anthropic/claude-sonnet-4-20250505",
+      "temperature": 0.5,
+      "tools": {
+        "read": true,
+        "bash": true
+      }
+    },
+    "reviewer": {
+      "description": "Code review agent",
+      "model": "anthropic/claude-opus-4-5-20251101",
+      "temperature": 0.3,
+      "tools": {
+        "read": true,
+        "bash": true
+      }
+    }
+  }
+}

@@ -1,0 +1,517 @@
+# AGENTS.md - OpenCode 自动化开发工作流
+
+> 本文件定义 OpenCode 的自动化工作流规则
+> 使用业界标准 Skills (addyosmani/agent-skills, 20K stars)
+> 当用户表达开发意图时，自动执行完整流程，无需手动引导
+
+---
+
+## 🚀 Skills 强制使用规则
+
+### 核心原则
+
+**在使用任何 Skill 之前，必须先加载正确的 Skill：**
+
+```markdown
+# 每次任务开始前
+1. 识别任务类型
+2. 调用 skill() 加载对应 Skill
+3. 按照 Skill 定义的流程执行
+```
+
+### 必须使用的 Skills
+
+| 任务类型 | 必须加载的 Skill | 来源 |
+|----------|-----------------|------|
+| 新项目/新功能开发 | `spec-driven-development` | addyosmani/agent-skills |
+| 创建实现计划 | `writing-plans` | addyosmani/agent-skills |
+| 实现多文件变更 | `incremental-implementation` | addyosmani/agent-skills |
+| 编写测试/修复bug | `test-driven-development` | addyosmani/agent-skills |
+| 代码审查 | `code-review-and-quality` | addyosmani/agent-skills |
+| 调试/修复错误 | `debugging-and-error-recovery` | addyosmani/agent-skills |
+| 上下文管理 | `context-engineering` | addyosmani/agent-skills |
+
+### Skills 自动加载示例
+
+```typescript
+// 新项目开发
+if (用户说 "创建新项目" 或 "新建项目") {
+  await skill({ name: "spec-driven-development" });
+  // → 自动进入 SPECIFY 阶段，创建规范
+}
+
+// 实现功能
+if (用户说 "添加功能" 或 "实现XX") {
+  await skill({ name: "writing-plans" });
+  await skill({ name: "incremental-implementation" });
+  await skill({ name: "test-driven-development" });
+}
+
+// 代码审查
+if (用户说 "审查代码" 或 "code review") {
+  await skill({ name: "code-review-and-quality" });
+}
+
+// 调试
+if (用户说 "修复bug" 或 "error") {
+  await skill({ name: "debugging-and-error-recovery" });
+}
+```
+
+---
+
+## 🚀 自动化工作流核心
+
+### 当用户表达以下意图时，自动执行对应流程：
+
+| 用户意图 | 自动执行流程 | 对应 Skills |
+|----------|-------------|-------------|
+| "创建新项目" / "新建项目" / "/dev new" | 完整新项目流程 | spec-driven-development → writing-plans |
+| "添加功能" / "开发新功能" | 功能开发流程 | writing-plans → incremental-implementation → test-driven-development |
+| "继续工作" / "继续上次" / "/dev continue" | 恢复工作流程 | context-engineering + 读取 progress.txt |
+| "修复bug" / "解决错误" | 调试修复流程 | debugging-and-error-recovery → test-driven-development |
+| "代码审查" / "审查代码" / "/dev review" | 代码审查流程 | code-review-and-quality |
+| "部署" / "发布" | 部署验证流程 | security-and-hardening → 部署 |
+
+---
+
+## 🎯 Skills 自更新系统
+
+### 核心原则（不可违背）
+
+1. **用户确认原则**
+   - 所有 Skills 更改都必须获得用户明确同意
+   - 系统仅提供建议，不自动执行
+   - 用户拒绝后不再次打扰
+
+2. **版本控制原则**
+   - 每次更改都有完整存档
+   - 记录：更改原因、更改内容、更改前后对比
+   - 可追溯的历史记录
+
+3. **容错回退原则**
+   - 保留至少 3 个历史版本
+   - 用户可随时回退到上一版本
+   - 出错时自动回退
+
+### 自更新触发条件
+
+| 触发类型 | 条件 | 响应 |
+|---------|------|------|
+| Session Start | 用户打开 OpenCode | 自动检查推荐 Skills |
+| 需求响应 | 用户请求当前 Skills 无法满足的功能 | 自动调研并推荐 Skills |
+| 定期自检 | 每周或用户触发 `/skill-check` | 扫描并推荐更好替代方案 |
+| 回退请求 | 用户说 "回退版本" | 恢复到上一版本 |
+
+### 自更新工作流
+
+```
+IDLE → CHECK_ON_START → WAIT_CONFIRM → EXECUTE → ARCHIVE → IDLE
+            ↓
+         RESEARCH_DEMAND → WAIT_CONFIRM → EXECUTE → ARCHIVE → IDLE
+            ↓
+         PERIODIC_CHECK → WAIT_CONFIRM → EXECUTE → ARCHIVE → IDLE
+```
+
+### 用户确认协议
+
+```markdown
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️ 需要你的确认
+
+操作：[添加/替换/删除] [skill-name]
+原因：[原因描述]
+影响：
+- 正面：[benefits]
+- 风险：[risks]
+
+请回复：
+- "确认" - 执行操作
+- "拒绝" - 取消操作
+- "详情" - 查看更多详情
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+### 回退命令
+
+- "回退版本" → 恢复到上一版本
+- "回退到 v2" → 恢复到指定版本
+
+---
+
+## 1. 新项目创建流程 (auto-trigger)
+
+### 触发条件
+用户说："创建新项目"、"新建项目"、"我想做个XX"、"start a project"
+
+### 自动执行步骤
+
+**阶段 1: 加载 Skills**
+```typescript
+await skill({ name: "spec-driven-development" });
+```
+
+**阶段 2: 规范创建 (SPECIFY)**
+按照 `spec-driven-development` 的 4 阶段流程：
+
+1. 创建结构化规范，包含：
+   - 项目概述和目标用户
+   - 核心功能列表
+   - 用户故事
+   - 成功标准（可测试）
+   - 风险和缓解策略
+
+2. **必须人类审查 gate**：规范保存后，等待用户确认
+
+**阶段 3: 计划创建 (PLAN)**
+```typescript
+await skill({ name: "writing-plans" });
+```
+
+按照 `writing-plans` 创建实现计划：
+- 每个任务 5 分钟内可完成
+- 包含文件路径、代码、测试命令
+
+**阶段 4: 实现 (IMPLEMENT)**
+```typescript
+await skill({ name: "incremental-implementation" });
+await skill({ name: "test-driven-development" });
+```
+
+每个任务：实现 → 测试 → 验证 → 提交
+
+**阶段 5: 状态管理**
+- 创建/更新 progress.txt
+- 创建 lessons.md（空）
+- 提交代码
+
+---
+
+## 2. 功能开发流程 (auto-trigger)
+
+### 触发条件
+用户说："添加功能"、"开发新功能"、"实现XX功能"、"add feature"
+
+### 自动执行步骤
+
+**阶段 1: 检查上下文**
+```typescript
+await skill({ name: "context-engineering" });
+```
+- 读取 progress.txt 获取当前进度
+- 读取 PRD.md 确认功能范围
+
+**阶段 2: 需求规范 (如需要)**
+```typescript
+await skill({ name: "spec-driven-development" });
+```
+- 如果需求不明确，先创建规范
+
+**阶段 3: 计划**
+```typescript
+await skill({ name: "writing-plans" });
+```
+
+**阶段 4: 实现**
+```typescript
+await skill({ name: "incremental-implementation" });
+await skill({ name: "test-driven-development" });
+```
+
+实现规则：
+- 每个增量 ≤ 100 行代码
+- 每个增量后测试、验证、提交
+- 遵循 TDD：先写测试 → 实现 → 重构
+
+**阶段 5: 验证**
+- 构建检查：`npm run build`
+- 运行测试：`npm test`
+- 更新 progress.txt
+
+---
+
+## 3. 恢复工作流程 (auto-trigger)
+
+### 触发条件
+用户说："继续工作"、"继续上次"、"接着来"、"resume"
+
+### 自动执行步骤
+
+**阶段 1: 上下文恢复**
+```typescript
+await skill({ name: "context-engineering" });
+```
+
+1. 读取 progress.txt 获取当前进度
+2. 读取 lessons.md 获取历史错误模式
+3. 读取最近一次提交的变更
+4. 确认当前待完成任务
+
+**阶段 2: 继续实现**
+```typescript
+await skill({ name: "incremental-implementation" });
+await skill({ name: "test-driven-development" });
+```
+
+---
+
+## 4. 调试修复流程 (auto-trigger)
+
+### 触发条件
+用户说："修复bug"、"解决这个问题"、"error"、"崩溃了"
+
+### 自动执行步骤
+
+**阶段 1: 加载调试 Skill**
+```typescript
+await skill({ name: "debugging-and-error-recovery" });
+```
+
+按照 5 步 triage 流程：
+1. **Reproduce** - 复现问题
+2. **Localize** - 定位问题代码
+3. **Reduce** - 最小化复现案例
+4. **Fix** - 实施修复
+5. **Guard** - 添加防护，防止回归
+
+**阶段 2: 回归测试**
+```typescript
+await skill({ name: "test-driven-development" });
+```
+
+修复后必须运行测试验证
+
+**阶段 3: 记录学习**
+- 更新 lessons.md 记录错误模式和解决方案
+
+---
+
+## 5. 代码审查流程 (auto-trigger)
+
+### 触发条件
+用户说："审查代码"、"code review"、"检查代码"
+
+### 自动执行步骤
+
+**阶段 1: 加载审查 Skill**
+```typescript
+await skill({ name: "code-review-and-quality" });
+```
+
+按照 5 轴审查：
+1. **Correctness** - 正确性
+2. **Design** - 设计
+3. **Complexity** - 复杂性
+4. **Tests** - 测试覆盖
+5. **Naming** - 命名
+
+**阶段 2: 自动过滤**
+- 仅报告置信度 ≥80 的问题
+
+**阶段 3: 输出报告**
+- 按严重程度分类：Nit/Optional/FYI/Critical
+
+---
+
+## 6. 部署验证流程 (auto-trigger)
+
+### 触发条件
+用户说："部署"、"发布"、"deploy"、"上线"
+
+### 自动执行步骤
+
+**阶段 1: 安全检查**
+```typescript
+await skill({ name: "security-and-hardening" });
+```
+
+- OWASP Top 10 检查
+- 认证模式验证
+- Secrets 管理检查
+
+**阶段 2: 执行部署**
+- 推送到 GitHub
+- Vercel 自动部署
+
+**阶段 3: 验证**
+- 测试生产环境
+- 检查关键功能
+
+---
+
+## 7. 会话管理规则
+
+### 7.1 每次会话开始（自动执行）
+
+1. **加载上下文管理**
+```typescript
+await skill({ name: "context-engineering" });
+```
+
+2. **读取项目状态**
+   - 读取 progress.txt 获取当前进度
+   - 读取 lessons.md 获取历史错误模式
+   - 确认当前待完成任务
+
+### 7.2 会话开始时的欢迎与推荐（自动执行）
+
+**每次打开 session 时，必须执行：**
+
+1. **显示欢迎消息**
+```
+👋 欢迎回来！我是你的 OpenCode 开发助手。
+
+当前项目：[项目名称]
+当前状态：进行中
+```
+
+2. **触发 Skills 自更新系统**
+```typescript
+await skill({ name: "skill-self-update" });
+// → 自动检查是否有新的 Skills 推荐
+```
+
+3. **推荐有用 Skills**
+
+根据当前任务类型，推荐相关 Skills：
+
+| 任务类型 | 推荐 Skills |
+|----------|-------------|
+| 新功能开发 | spec-driven-development, writing-plans |
+| 代码实现 | incremental-implementation, test-driven-development |
+| 代码审查 | code-review-and-quality |
+| Bug 调试 | debugging-and-error-recovery |
+| 前端开发 | frontend-ui-engineering |
+| API 设计 | api-and-interface-design |
+| 安全相关 | security-and-hardening |
+
+示例推荐消息：
+```
+🔧 推荐 Skills（根据你的任务）：
+• spec-driven-development - 需求规范化
+• writing-plans - 实现计划创建
+• test-driven-development - TDD 开发模式
+
+使用方式：输入 "加载 [skill-name]"
+
+💡 发现新 Skills：[列表] - 回复 "了解更多" 查看详情
+```
+
+---
+
+## 8. OpenCode 模式使用规则
+
+### 模式选择（自动判断）
+
+| 场景 | 模式 |
+|------|------|
+| 需求分析/规划 | Plan (Tab) |
+| 写代码/实现 | Build (默认) |
+
+### 自动切换逻辑
+
+- interrogation/分析 → Plan 模式
+- 加载 Skill 后 → 切换 Build 模式
+- 实现完成 → 切换回 Plan 模式待命
+
+---
+
+## 9. 文档系统
+
+### 规范文档位置
+
+```
+项目根目录/
+├── PRD.md                    # 产品需求
+├── APP_FLOW.md              # 用户流程
+├── TECH_STACK.md            # 技术栈
+├── FRONTEND_GUIDELINES.md   # 设计系统
+├── BACKEND_STRUCTURE.md     # 后端结构
+├── IMPLEMENTATION_PLAN.md   # 实施计划
+├── SPEC.md                  # 规范（spec-driven-development 输出）
+├── docs/plans/              # 实现计划
+├── progress.txt             # 会话进度
+└── lessons.md               # 错误学习
+```
+
+### 文档优先级
+
+1. 用户确认过的文档 > AI 生成的草稿
+2. 手动编辑的 > 自动生成的
+3. 精确版本 > 模糊描述
+
+---
+
+## 10. 安全与限制
+
+### 禁止操作（自动拒绝执行）
+
+- 删除项目重要文件（确认后才行）
+- 提交 .env 到 git
+- 硬编码 API 密钥
+- 执行未确认的外部命令
+
+### 确认机制
+
+- 涉及文件删除：提示确认
+- 涉及外部操作：提示确认
+- 涉及破坏性操作：提示确认
+
+---
+
+## 11. 错误处理
+
+### 失败时的处理
+
+1. 加载调试 Skill：`await skill({ name: "debugging-and-error-recovery" })`
+2. 分析错误原因
+3. 提供修复方案供用户确认
+4. 用户确认后执行修复
+5. 验证修复成功
+6. 记录到 lessons.md
+
+---
+
+## 12. 快速参考
+
+### 斜杠命令（用户可使用）
+
+| 命令 | 效果 |
+|------|------|
+| /dev new | 开始新项目流程 |
+| /dev add | 添加新功能 |
+| /dev continue | 继续上次工作 |
+| /dev review | 代码审查 |
+| /dev status | 查看当前进度 |
+| /skill-check | 手动触发 Skills 定期自检 |
+| 回退版本 | 回退到上一个版本 |
+| 回退到 vN | 回退到指定版本 |
+
+### Skills 快速查找
+
+```typescript
+// 需求阶段
+skill({ name: "spec-driven-development" })
+
+// 计划阶段
+skill({ name: "writing-plans" })
+
+// 实现阶段
+skill({ name: "incremental-implementation" })
+skill({ name: "test-driven-development" })
+
+// 审查阶段
+skill({ name: "code-review-and-quality" })
+
+// 调试阶段
+skill({ name: "debugging-and-error-recovery" })
+
+// 上下文管理
+skill({ name: "context-engineering" })
+```
+
+---
+
+> 本文件由 opencode-dev-workflow 生成
+> 使用 addyosmani/agent-skills (20K stars) 业界标准 Skills
+> 自动化工作流，无需手动引导
