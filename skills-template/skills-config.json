@@ -1,0 +1,194 @@
+{
+  "version": "2.0.0",
+  "description": "OpenCode 推荐 Skills 配置 - 基于行业最佳实践优化",
+  "lastUpdated": "2026-05-04",
+  "source": "addyosmani/agent-skills (20K stars) + 社区调研",
+  "philosophy": "使用业界验证的标准化 Skills，替代自定义工作流",
+  "coreSkills": [
+    {
+      "name": "spec-driven-development",
+      "source": "addyosmani/agent-skills",
+      "url": "https://github.com/addyosmani/agent-skills/tree/main/skills/spec-driven-development",
+      "description": "先规范后编码 - 需求不明确时必须使用",
+      "trigger": "创建新项目、新功能、需求不明确",
+      "category": "requirements",
+      "workflow": "SPECIFY → PLAN → TASKS → IMPLEMENT"
+    },
+    {
+      "name": "writing-plans",
+      "source": "addyosmani/agent-skills",
+      "url": "https://github.com/addyosmani/agent-skills/tree/main/skills/writing-plans",
+      "description": "创建可执行实现计划 - 任务拆分每个 5 分钟内完成",
+      "trigger": "有规范或需求，需要实现计划",
+      "category": "planning"
+    },
+    {
+      "name": "incremental-implementation",
+      "source": "addyosmani/agent-skills",
+      "url": "https://github.com/addyosmani/agent-skills/tree/main/skills/incremental-implementation",
+      "description": "薄切片实现 - 100 行限制，测试后提交，可回滚",
+      "trigger": "实现任何多文件变更",
+      "category": "implementation",
+      "rules": [
+        "每个增量实现、测试、验证、提交",
+        "不超过 100 行代码",
+        "保持项目可编译"
+      ]
+    },
+    {
+      "name": "test-driven-development",
+      "source": "addyosmani/agent-skills",
+      "url": "https://github.com/addyosmani/agent-skills/tree/main/skills/test-driven-development",
+      "description": "RED-GREEN-REFACTOR - 80%+ 覆盖率，测试金字塔",
+      "trigger": "实现逻辑、修复 bug、更改行为",
+      "category": "testing",
+      "rules": [
+        "先写测试 (RED)",
+        "实现代码让测试通过 (GREEN)",
+        "重构代码 (REFACTOR)",
+        "覆盖率目标 80%+"
+      ]
+    },
+    {
+      "name": "code-review-and-quality",
+      "source": "addyosmani/agent-skills",
+      "url": "https://github.com/addyosmani/agent-skills/tree/main/skills/code-review-and-quality",
+      "description": "5 轴审查 - 正确性/设计/复杂性/测试/命名，置信度过滤",
+      "trigger": "合并代码前",
+      "category": "review",
+      "rules": [
+        "检查正确性、设计、复杂性、测试、命名",
+        "变更大小约 100 行",
+        "置信度 ≥80 才报告"
+      ]
+    },
+    {
+      "name": "debugging-and-error-recovery",
+      "source": "addyosmani/agent-skills",
+      "url": "https://github.com/addyosmani/agent-skills/tree/main/skills/debugging-and-error-recovery",
+      "description": "5 步调试流程 - reproduce/localize/reduce/fix/guard",
+      "trigger": "测试失败、构建失败、行为异常",
+      "category": "debugging",
+      "workflow": "reproduce → localize → reduce → fix → guard"
+    },
+    {
+      "name": "context-engineering",
+      "source": "addyosmani/agent-skills",
+      "url": "https://github.com/addyosmani/agent-skills/tree/main/skills/context-engineering",
+      "description": "正确时间加载正确上下文 - 防止上下文膨胀",
+      "trigger": "开始会话、切换任务、输出质量下降",
+      "category": "context-management"
+    }
+  ],
+  "enhancedSkills": [
+    {
+      "name": "frontend-ui-engineering",
+      "source": "addyosmani/agent-skills",
+      "description": "组件架构、设计系统、状态管理、响应式、WCAG 2.1 AA",
+      "trigger": "构建或修改用户界面",
+      "category": "frontend"
+    },
+    {
+      "name": "api-and-interface-design",
+      "source": "addyosmani/agent-skills",
+      "description": "契约优先设计、Hyrum's Law、One-Version Rule",
+      "trigger": "设计 API、模块边界、公共接口",
+      "category": "backend"
+    },
+    {
+      "name": "security-and-hardening",
+      "source": "addyosmani/agent-skills",
+      "description": "OWASP Top 10 预防、认证模式、Secrets 管理",
+      "trigger": "处理用户输入、认证、数据存储、外部集成",
+      "category": "security"
+    },
+    {
+      "name": "syncause-debugger",
+      "source": "Syncause/debug-skill",
+      "url": "https://github.com/Syncause/debug-skill",
+      "description": "运行时证据调试 - 堆栈跟踪、请求参数、变量快照",
+      "trigger": "需要运行时证据的复杂 bug",
+      "category": "debugging",
+      "requires": "MCP server installation"
+    }
+  ],
+  "skillPackages": [
+    {
+      "name": "addyosmani/agent-skills",
+      "stars": "20K",
+      "description": "业界标准 - 20K stars，生产级工程 Skills",
+      "skills": [
+        "spec-driven-development",
+        "writing-plans",
+        "incremental-implementation",
+        "test-driven-development",
+        "code-review-and-quality",
+        "debugging-and-error-recovery",
+        "context-engineering",
+        "frontend-ui-engineering",
+        "api-and-interface-design",
+        "security-and-hardening"
+      ]
+    },
+    {
+      "name": "opencode-agent-skills",
+      "source": "joshuadavidthomas/opencode-agent-skills",
+      "stars": "171",
+      "description": "动态 Skills 发现，上下文注入，会话压缩恢复",
+      "features": [
+        "动态 skill 发现",
+        "上下文注入",
+        "会话压缩恢复",
+        "Claude Code 兼容"
+      ]
+    }
+  ],
+  "workflowMapping": {
+    "new-project": {
+      "skills": ["spec-driven-development", "writing-plans"],
+      "description": "需求 → 计划 → 实现"
+    },
+    "add-feature": {
+      "skills": ["spec-driven-development", "writing-plans", "incremental-implementation", "test-driven-development"],
+      "description": "规范 → 计划 → 增量实现 → TDD"
+    },
+    "debug-fix": {
+      "skills": ["debugging-and-error-recovery", "test-driven-development"],
+      "description": "调试 → 回归测试"
+    },
+    "code-review": {
+      "skills": ["code-review-and-quality"],
+      "description": "5 轴审查 + 置信度过滤"
+    },
+    "continue-work": {
+      "skills": ["context-engineering"],
+      "description": "上下文管理 + 状态恢复"
+    }
+  },
+  "installation": {
+    "method": "npx skills add",
+    "commands": [
+      "# 核心 Skills (addyosmani/agent-skills)",
+      "npx skills add https://github.com/addyosmani/agent-skills --skill spec-driven-development",
+      "npx skills add https://github.com/addyosmani/agent-skills --skill writing-plans",
+      "npx skills add https://github.com/addyosmani/agent-skills --skill incremental-implementation",
+      "npx skills add https://github.com/addyosmani/agent-skills --skill test-driven-development",
+      "npx skills add https://github.com/addyosmani/agent-skills --skill code-review-and-quality",
+      "npx skills add https://github.com/addyosmani/agent-skills --skill debugging-and-error-recovery",
+      "npx skills add https://github.com/addyosmani/agent-skills --skill context-engineering",
+      "",
+      "# 增强 Skills",
+      "npx skills add https://github.com/addyosmani/agent-skills --skill frontend-ui-engineering",
+      "npx skills add https://github.com/addyosmani/agent-skills --skill security-and-hardening",
+      "",
+      "# 动态 Skills 发现插件",
+      "npm install -g opencode-agent-skills"
+    ]
+  },
+  "notes": [
+    "核心 Skills 使用 addyosmani/agent-skills (20K stars) - 业界标准",
+    "所有 Skills 设计为自动衔接，无需手动触发",
+    "在 AGENTS.md 中添加强制规则确保工作流顺序",
+    "debugging 可选集成 syncause-debugger 获取运行时证据"
+  ]
+}
