@@ -89,36 +89,110 @@ EOF
 
 echo -e "${GREEN}✓ progress.txt 已创建${NC}"
 
-# 4. 安装 Skills（可选）
-echo -e "${YELLOW}[4/5] 安装 Skills...${NC}"
+# 4. 安装 Skills
+echo -e "${YELLOW}[4/6] 安装核心 Skills (addyosmani/agent-skills)...${NC}"
 
-read -p "是否安装推荐 Skills 包？（推荐）[Y/n] " -n 1 -r
+# 检查 npx 是否可用
+if ! command -v npx &> /dev/null; then
+    echo -e "${RED}✗ npx 未安装，跳过 Skills 安装${NC}"
+    echo -e "${YELLOW}请手动安装 Node.js 后重试${NC}"
+else
+    echo "正在安装核心 Skills..."
+
+    # 核心 Skills 列表
+    CORE_SKILLS=(
+        "spec-driven-development"
+        "writing-plans"
+        "incremental-implementation"
+        "test-driven-development"
+        "code-review-and-quality"
+        "debugging-and-error-recovery"
+        "context-engineering"
+    )
+
+    # 增强 Skills 列表
+    ENHANCED_SKILLS=(
+        "frontend-ui-engineering"
+        "security-and-hardening"
+    )
+
+    # 安装核心 Skills
+    echo -e "${BLUE}安装核心 Skills...${NC}"
+    for skill in "${CORE_SKILLS[@]}"; do
+        echo -n "  安装 $skill..."
+        if npx skills add "https://github.com/addyosmani/agent-skills" --skill "$skill" 2>/dev/null; then
+            echo -e " ${GREEN}✓${NC}"
+        else
+            echo -e " ${RED}✗${NC}"
+        fi
+    done
+
+    # 询问是否安装增强 Skills
+    echo ""
+    read -p "是否安装增强 Skills？（前端、安全等）[Y/n] " -n 1 -r
+    echo
+
+    if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+        echo -e "${BLUE}安装增强 Skills...${NC}"
+        for skill in "${ENHANCED_SKILLS[@]}"; do
+            echo -n "  安装 $skill..."
+            if npx skills add "https://github.com/addyosmani/agent-skills" --skill "$skill" 2>/dev/null; then
+                echo -e " ${GREEN}✓${NC}"
+            else
+                echo -e " ${RED}✗${NC}"
+            fi
+        done
+    fi
+
+    echo -e "${GREEN}✓ Skills 安装完成${NC}"
+fi
+
+# 5. 复制文档模板（可选）
+echo -e "${YELLOW}[5/6] 复制文档模板...${NC}"
+
+read -p "是否复制文档模板到项目？（BACKEND_STRUCTURE.md, FRONTEND_GUIDELINES.md）[Y/n] " -n 1 -r
 echo
 
 if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
-    echo "正在克隆 farmage/opencode-skills..."
+    # 复制保留的模板文件
+    if [ -f "$PROJECT_ROOT/templates/BACKEND_STRUCTURE.md" ]; then
+        cp "$PROJECT_ROOT/templates/BACKEND_STRUCTURE.md" "$PROJECT_ROOT/"
+        echo -e "${GREEN}✓ BACKEND_STRUCTURE.md 已创建${NC}"
+    fi
 
-    # 检查是否有 git
-    if ! command -v git &> /dev/null; then
-        echo -e "${RED}✗ git 未安装，跳过 Skills 安装${NC}"
-    else
-        # 克隆 Skills 到临时目录
-        TEMP_SKILLS=$(mktemp -d)
-        git clone --depth 1 https://github.com/farmage/opencode-skills.git "$TEMP_SKILLS" 2>/dev/null || {
-            echo -e "${RED}✗ 无法克隆 Skills 仓库${NC}"
-            rm -rf "$TEMP_SKILLS"
-        }
-
-        if [ -d "$TEMP_SKILLS/skills" ]; then
-            cp -r "$TEMP_SKILLS/skills/"* "$PROJECT_ROOT/.opencode/skills/"
-            echo -e "${GREEN}✓ Skills 已安装到 .opencode/skills/${NC}"
-        fi
-
-        rm -rf "$TEMP_SKILLS"
+    if [ -f "$PROJECT_ROOT/templates/FRONTEND_GUIDELINES.md" ]; then
+        cp "$PROJECT_ROOT/templates/FRONTEND_GUIDELINES.md" "$PROJECT_ROOT/"
+        echo -e "${GREEN}✓ FRONTEND_GUIDELINES.md 已创建${NC}"
     fi
 fi
 
-# 5. 显示完成信息
+# 6. 复制自定义 Skills
+echo -e "${YELLOW}[6/6] 复制自定义 Skills...${NC}"
+
+read -p "是否复制自定义 Skills 到项目？[Y/n] " -n 1 -r
+echo
+
+if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+    # 复制 skill-self-update
+    if [ -d "$PROJECT_ROOT/skills-template/skill-self-update" ]; then
+        cp -r "$PROJECT_ROOT/skills-template/skill-self-update" "$PROJECT_ROOT/.opencode/skills/"
+        echo -e "${GREEN}✓ skill-self-update 已安装${NC}"
+    fi
+
+    # 复制 skill-recommendation
+    if [ -d "$PROJECT_ROOT/skills-template/skill-recommendation" ]; then
+        cp -r "$PROJECT_ROOT/skills-template/skill-recommendation" "$PROJECT_ROOT/.opencode/skills/"
+        echo -e "${GREEN}✓ skill-recommendation 已安装${NC}"
+    fi
+
+    # 复制 skills-config.json
+    if [ -f "$PROJECT_ROOT/skills-template/skills-config.json" ]; then
+        cp "$PROJECT_ROOT/skills-template/skills-config.json" "$PROJECT_ROOT/.opencode/"
+        echo -e "${GREEN}✓ skills-config.json 已创建${NC}"
+    fi
+fi
+
+# 7. 显示完成信息
 echo ""
 echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}  安装完成！${NC}"
@@ -126,11 +200,7 @@ echo -e "${BLUE}========================================${NC}"
 echo ""
 echo -e "后续步骤："
 echo -e "  1. 编辑 AGENTS.md 中的项目信息"
-echo -e "  2. 复制模板文件到你的项目："
-echo -e "     - templates/PRD.md"
-echo -e "     - templates/APP_FLOW.md"
-echo -e "     - templates/TECH_STACK.md"
-echo -e "     - 等等..."
+echo -e "  2. 如需手动文档，编辑 BACKEND_STRUCTURE.md 或 FRONTEND_GUIDELINES.md"
 echo -e "  3. 运行 opencode 开始开发"
 echo ""
 echo -e "更多信息请查看 README.md"

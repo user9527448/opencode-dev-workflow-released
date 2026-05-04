@@ -90,37 +90,106 @@ Set-Content -Path "$ProjectRoot\progress.txt" -Value $progressContent -Encoding 
 Write-Host "${Green}✓ progress.txt 已创建${NC}"
 
 # 4. 安装 Skills
-Write-Host "${Yellow}[4/5] 安装 Skills...${NC}"
+Write-Host "${Yellow}[4/6] 安装核心 Skills (addyosmani/agent-skills)...${NC}"
 
-$installSkills = Read-Host "是否安装推荐 Skills 包？（推荐）[Y/n]"
-if ($installSkills -eq "y" -or $installSkills -eq "Y" -or $installSkills -eq "") {
+# 检查 npx
+$npxPath = Get-Command npx -ErrorAction SilentlyContinue
+if (-not $npxPath) {
+    Write-Host "${Red}✗ npx 未安装，跳过 Skills 安装${NC}"
+    Write-Host "${Yellow}请手动安装 Node.js 后重试${NC}"
+} else {
+    Write-Host "正在安装核心 Skills..."
 
-    # 检查 git
-    $gitPath = Get-Command git -ErrorAction SilentlyContinue
-    if (-not $gitPath) {
-        Write-Host "${Red}✗ git 未安装，跳过 Skills 安装${NC}"
-    } else {
-        Write-Host "正在克隆 farmage/opencode-skills..."
+    # 核心 Skills 列表
+    $coreSkills = @(
+        "spec-driven-development",
+        "writing-plans",
+        "incremental-implementation",
+        "test-driven-development",
+        "code-review-and-quality",
+        "debugging-and-error-recovery",
+        "context-engineering"
+    )
 
-        $tempDir = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), [System.Guid]::NewGuid().ToString())
-        New-Item -ItemType Directory -Force -Path $tempDir | Out-Null
+    # 增强 Skills 列表
+    $enhancedSkills = @(
+        "frontend-ui-engineering",
+        "security-and-hardening"
+    )
 
+    # 安装核心 Skills
+    Write-Host "${Blue}安装核心 Skills...${NC}"
+    foreach ($skill in $coreSkills) {
+        Write-Host "  安装 $skill..." -NoNewline
         try {
-            git clone --depth 1 https://github.com/farmage/opencode-skills.git $tempDir 2>$null
-
-            if (Test-Path "$tempDir\skills") {
-                Copy-Item "$tempDir\skills\*" "$ProjectRoot\.opencode\skills\" -Recurse -Force
-                Write-Host "${Green}✓ Skills 已安装到 .opencode/skills/${NC}"
-            }
+            npx skills add "https://github.com/addyosmani/agent-skills" --skill $skill 2>$null
+            Write-Host " ${Green}✓${NC}"
         } catch {
-            Write-Host "${Red}✗ 无法克隆 Skills 仓库${NC}"
+            Write-Host " ${Red}✗${NC}"
         }
+    }
 
-        Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
+    # 询问是否安装增强 Skills
+    Write-Host ""
+    $installEnhanced = Read-Host "是否安装增强 Skills？（前端、安全等）[Y/n]"
+    if ($installEnhanced -eq "y" -or $installEnhanced -eq "Y" -or $installEnhanced -eq "") {
+        Write-Host "${Blue}安装增强 Skills...${NC}"
+        foreach ($skill in $enhancedSkills) {
+            Write-Host "  安装 $skill..." -NoNewline
+            try {
+                npx skills add "https://github.com/addyosmani/agent-skills" --skill $skill 2>$null
+                Write-Host " ${Green}✓${NC}"
+            } catch {
+                Write-Host " ${Red}✗${NC}"
+            }
+        }
+    }
+
+    Write-Host "${Green}✓ Skills 安装完成${NC}"
+}
+
+# 5. 复制文档模板（可选）
+Write-Host "${Yellow}[5/6] 复制文档模板...${NC}"
+
+$copyTemplates = Read-Host "是否复制文档模板到项目？（BACKEND_STRUCTURE.md, FRONTEND_GUIDELINES.md）[Y/n]"
+if ($copyTemplates -eq "y" -or $copyTemplates -eq "Y" -or $copyTemplates -eq "") {
+    # 复制保留的模板文件
+    if (Test-Path "$ProjectRoot\templates\BACKEND_STRUCTURE.md") {
+        Copy-Item "$ProjectRoot\templates\BACKEND_STRUCTURE.md" "$ProjectRoot\"
+        Write-Host "${Green}✓ BACKEND_STRUCTURE.md 已创建${NC}"
+    }
+
+    if (Test-Path "$ProjectRoot\templates\FRONTEND_GUIDELINES.md") {
+        Copy-Item "$ProjectRoot\templates\FRONTEND_GUIDELINES.md" "$ProjectRoot\"
+        Write-Host "${Green}✓ FRONTEND_GUIDELINES.md 已创建${NC}"
     }
 }
 
-# 5. 完成
+# 6. 复制自定义 Skills
+Write-Host "${Yellow}[6/6] 复制自定义 Skills...${NC}"
+
+$copyCustom = Read-Host "是否复制自定义 Skills 到项目？[Y/n]"
+if ($copyCustom -eq "y" -or $copyCustom -eq "Y" -or $copyCustom -eq "") {
+    # 复制 skill-self-update
+    if (Test-Path "$ProjectRoot\skills-template\skill-self-update") {
+        Copy-Item "$ProjectRoot\skills-template\skill-self-update" "$ProjectRoot\.opencode\skills\" -Recurse -Force
+        Write-Host "${Green}✓ skill-self-update 已安装${NC}"
+    }
+
+    # 复制 skill-recommendation
+    if (Test-Path "$ProjectRoot\skills-template\skill-recommendation") {
+        Copy-Item "$ProjectRoot\skills-template\skill-recommendation" "$ProjectRoot\.opencode\skills\" -Recurse -Force
+        Write-Host "${Green}✓ skill-recommendation 已安装${NC}"
+    }
+
+    # 复制 skills-config.json
+    if (Test-Path "$ProjectRoot\skills-template\skills-config.json") {
+        Copy-Item "$ProjectRoot\skills-template\skills-config.json" "$ProjectRoot\.opencode\"
+        Write-Host "${Green}✓ skills-config.json 已创建${NC}"
+    }
+}
+
+# 7. 完成
 Write-Host ""
 Write-Host "${Blue}========================================${NC}"
 Write-Host "${Blue}  安装完成！${NC}"
@@ -128,11 +197,7 @@ Write-Host "${Blue}========================================${NC}"
 Write-Host ""
 Write-Host "后续步骤："
 Write-Host "  1. 编辑 AGENTS.md 中的项目信息"
-Write-Host "  2. 复制模板文件到你的项目："
-Write-Host "     - templates/PRD.md"
-Write-Host "     - templates/APP_FLOW.md"
-Write-Host "     - templates/TECH_STACK.md"
-Write-Host "     - 等等..."
+Write-Host "  2. 如需手动文档，编辑 BACKEND_STRUCTURE.md 或 FRONTEND_GUIDELINES.md"
 Write-Host "  3. 运行 opencode 开始开发"
 Write-Host ""
 Write-Host "更多信息请查看 README.md"
