@@ -1,5 +1,4 @@
 # OpenCode 自动化开发工作流
-> 说在前面 | 大家好这里是Mr.KIDZ，一名普通高校的大三学生。这个项目目前还是一个半成品，做这个项目的初衷是想帮助很多像我一样处在vibecoding初期、不怎么了解vibecoding规范的的伙伴节约时间。我希望你们能够通过部署这个项目中的工作流，不必再去“查找各种资料去了解如何规范化的vibecoding”、或者花很多时间在“什么skills好用”上，而是有了想法就直接做，让opencode自己来规范自己，我们只需要关注在想要完成的项目上就好了。由于我水平有限，我恳请各位能够体验一下这个项目，多发现BUG和问题并向作者-也就是我本人-反馈，对于项目有好的想法和建议也欢迎大家一起共创。
 
 > 基于 Vibe Coding 方法论 | 完全自动化，无需手动引导
 > 使用 addyosmani/agent-skills (20K stars) 业界标准 Skills
@@ -35,30 +34,13 @@ curl -fsSL https://opencode.ai/install | bash
 scoop install opencode
 ```
 
-### 2. 安装推荐 Skills
+### 2. 克隆并安装
 
 ```bash
-# 核心 Skills (addyosmani/agent-skills - 20K stars)
-npx skills add https://github.com/addyosmani/agent-skills --skill spec-driven-development
-npx skills add https://github.com/addyosmani/agent-skills --skill writing-plans
-npx skills add https://github.com/addyosmani/agent-skills --skill incremental-implementation
-npx skills add https://github.com/addyosmani/agent-skills --skill test-driven-development
-npx skills add https://github.com/addyosmani/agent-skills --skill code-review-and-quality
-npx skills add https://github.com/addyosmani/agent-skills --skill debugging-and-error-recovery
-npx skills add https://github.com/addyosmani/agent-skills --skill context-engineering
-
-# 增强 Skills
-npx skills add https://github.com/addyosmani/agent-skills --skill frontend-ui-engineering
-npx skills add https://github.com/addyosmani/agent-skills --skill security-and-hardening
-```
-
-### 3. 克隆并安装
-
-```bash
-git clone https://github.com/user9527448/opencode-dev-workflow-released.git
+git clone https://github.com/your-repo/opencode-dev-workflow.git
 cd opencode-dev-workflow
 
-# 运行安装脚本
+# 运行安装脚本（自动安装核心 Skills）
 # Linux/macOS
 chmod +x scripts/install.sh
 ./scripts/install.sh
@@ -67,15 +49,13 @@ chmod +x scripts/install.sh
 .\scripts\install.ps1
 ```
 
-### 4. 开始开发
+> **注意：** 安装脚本会自动安装核心 Skills（addyosmani/agent-skills），无需手动安装。
+
+### 3. 开始开发
 
 ```bash
 # 进入你的项目目录
 cd your-project
-
-# 复制配置文件
-cp opencode-dev-workflow/config/AGENTS.md ./
-cp opencode-dev-workflow/.opencode/commands/ .opencode/ -r
 
 # 启动 OpenCode
 opencode
@@ -225,15 +205,40 @@ IDLE → CHECK_ON_START → WAIT_CONFIRM → EXECUTE → ARCHIVE → IDLE
 ## 项目结构
 
 ```
+opencode-dev-workflow/
+├── config/                       # 配置模板
+│   ├── AGENTS.md.template       # AGENTS.md 模板
+│   └── opencode.json.template   # opencode.json 模板
+├── scripts/                      # 安装脚本
+│   ├── install.sh               # Linux/macOS 安装
+│   └── install.ps1              # Windows 安装
+├── templates/                    # 文档模板
+│   ├── BACKEND_STRUCTURE.md     # 后端架构文档
+│   └── FRONTEND_GUIDELINES.md   # 前端规范文档
+├── skills-template/              # 自定义 Skills
+│   ├── skill-recommendation/    # 技能推荐
+│   ├── skill-self-update/       # 自更新系统
+│   └── skills-config.json       # Skills 配置
+└── docs/                        # 文档
+    ├── SELF_UPDATE_SYSTEM_DESIGN.md
+    ├── CONFLICT_GUIDE.md
+    └── TESTING_GUIDE.md
+```
+
+### 安装后用户项目结构
+
+```
 your-project/
-├── AGENTS.md              # ← 核心自动化规则（由本项目提供）
+├── AGENTS.md              # ← 核心自动化规则
 ├── .opencode/
 │   ├── commands/          # ← 斜杠命令 (/dev new 等)
-│   └── skills-config.json # ← Skills 配置文件
+│   ├── skills/            # ← Skills 目录
+│   │   ├── skill-recommendation/
+│   │   └── skill-self-update/
+│   └── skills-config.json # ← Skills 配置
+├── BACKEND_STRUCTURE.md   # ← 后端架构文档（可选）
+├── FRONTEND_GUIDELINES.md # ← 前端规范（可选）
 ├── progress.txt           # ← 自动更新的进度文件
-├── lessons.md            # ← 自动更新的错误学习
-├── SPEC.md               # ← spec-driven-development 生成的规范
-├── docs/plans/           # ← writing-plans 生成的实现计划
 └── ...
 ```
 
